@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/finzeapp/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Finze App</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/finzeapp/src/main.tsx"></script>
+    <script>
+      // Redirect para index.html para SPA routing
+      sessionStorage.redirect = location.href;
+    </script>
+    <meta http-equiv="refresh" content="0;URL='/finzeapp/'" />
+  </body>
+</html>
