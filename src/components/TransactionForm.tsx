@@ -30,8 +30,8 @@ export const TransactionForm = ({
   const [amount, setAmount] = useState('');
   const [type, setType] = useState<'income' | 'expense'>('expense');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
-  const [categoryId, setCategoryId] = useState<string>('');
-  const [creditCardId, setCreditCardId] = useState<string>('');
+  const [categoryId, setCategoryId] = useState<string>('none');
+  const [creditCardId, setCreditCardId] = useState<string>('none');
   const [installments, setInstallments] = useState('1');
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -41,15 +41,15 @@ export const TransactionForm = ({
     if (!description || isNaN(numericAmount) || numericAmount <= 0) return;
 
     const numInstallments = parseInt(installments) || 1;
-    const selectedCard = creditCards.find((c) => c.id === creditCardId);
+    const selectedCard = creditCardId !== 'none' ? creditCards.find((c) => c.id === creditCardId) : undefined;
 
     const baseTransaction = {
       description,
       amount: numericAmount,
       type,
       date,
-      categoryId: categoryId || undefined,
-      creditCardId: creditCardId || undefined,
+      categoryId: categoryId !== 'none' ? categoryId : undefined,
+      creditCardId: creditCardId !== 'none' ? creditCardId : undefined,
     };
 
     let transactions: Transaction[];
@@ -148,7 +148,7 @@ export const TransactionForm = ({
               <SelectValue placeholder="Selecione uma categoria" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Sem categoria</SelectItem>
+              <SelectItem value="none">Sem categoria</SelectItem>
               {categories.map((cat) => (
                 <SelectItem key={cat.id} value={cat.id}>
                   <div className="flex items-center gap-2">
@@ -173,7 +173,7 @@ export const TransactionForm = ({
                   <SelectValue placeholder="Selecione um cartão" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Sem cartão</SelectItem>
+                  <SelectItem value="none">Sem cartão</SelectItem>
                   {creditCards.map((card) => (
                     <SelectItem key={card.id} value={card.id}>
                       {card.name}
