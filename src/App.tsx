@@ -17,7 +17,7 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
+      <BrowserRouter basename="/finzeapp">
         <div className="max-w-lg mx-auto bg-background min-h-screen relative">
           <Routes>
             <Route path="/" element={<Index />} />
