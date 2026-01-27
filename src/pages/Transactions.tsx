@@ -104,6 +104,15 @@ export const Transactions = () => {
           <span className="text-success">+ {formatCurrency(total.income)}</span>
           <span className="text-destructive">- {formatCurrency(total.expense)}</span>
         </div>
+
+        {/* Register Transaction Button */}
+        <button
+          onClick={() => setShowTransactionForm(true)}
+          className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors"
+        >
+          <Plus className="w-5 h-5" />
+          Registrar Lançamento
+        </button>
       </div>
 
       <div className="content-container">
