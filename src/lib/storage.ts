@@ -1,71 +1,129 @@
 import { Category, CategoryMonthlyLimit, CreditCard, Transaction } from '@/types/finance';
-
-const STORAGE_KEYS = {
-  CATEGORIES: 'finance_categories',
-  CATEGORY_LIMITS: 'finance_category_limits',
-  CREDIT_CARDS: 'finance_credit_cards',
-  TRANSACTIONS: 'finance_transactions',
-};
+import { db, getDefaultCategories } from './db';
 
 // Categories
-export const getCategories = (): Category[] => {
-  const data = localStorage.getItem(STORAGE_KEYS.CATEGORIES);
-  return data ? JSON.parse(data) : getDefaultCategories();
+export const getCategories = async (): Promise<Category[]> => {
+  const categories = await db.categories.toArray();
+  return categories.length > 0 ? categories : getDefaultCategories();
 };
 
-export const saveCategories = (categories: Category[]): void => {
-  localStorage.setItem(STORAGE_KEYS.CATEGORIES, JSON.stringify(categories));
+export const saveCategories = async (categories: Category[]): Promise<void> => {
+  await db.categories.clear();
+  await db.categories.bulkAdd(categories);
 };
 
-export const getDefaultCategories = (): Category[] => [
-  { id: '1', name: 'Alimentação', defaultLimit: 800, color: '#10b981' },
-  { id: '2', name: 'Transporte', defaultLimit: 400, color: '#3b82f6' },
-  { id: '3', name: 'Moradia', defaultLimit: 2000, color: '#8b5cf6' },
-  { id: '4', name: 'Lazer', defaultLimit: 300, color: '#f59e0b' },
-  { id: '5', name: 'Saúde', defaultLimit: 500, color: '#ec4899' },
-  { id: '6', name: 'Educação', defaultLimit: 400, color: '#06b6d4' },
-];
+export const addCategory = async (category: Category): Promise<void> => {
+  await db.categories.add(category);
+};
+
+export const updateCategory = async (category: Category): Promise<void> => {
+  await db.categories.update(category.id, category);
+};
+
+export const deleteCategory = async (id: string): Promise<void> => {
+  await db.categories.delete(id);
+};
 
 // Category Monthly Limits
-export const getCategoryMonthlyLimits = (): CategoryMonthlyLimit[] => {
-  const data = localStorage.getItem(STORAGE_KEYS.CATEGORY_LIMITS);
-  return data ? JSON.parse(data) : [];
+export const getCategoryMonthlyLimits = async (): Promise<CategoryMonthlyLimit[]> => {
+  return await db.categoryLimits.toArray();
 };
 
-export const saveCategoryMonthlyLimits = (limits: CategoryMonthlyLimit[]): void => {
-  localStorage.setItem(STORAGE_KEYS.CATEGORY_LIMITS, JSON.stringify(limits));
+export const saveCategoryMonthlyLimits = async (limits: CategoryMonthlyLimit[]): Promise<void> => {
+  await db.categoryLimits.clear();
+  await db.categoryLimits.bulkAdd(limits);
 };
 
-export const getCategoryLimit = (categoryId: string, month: string): number => {
-  const monthlyLimits = getCategoryMonthlyLimits();
+export const getCategoryLimit = async (categoryId: string, month: string): Promise<number> => {
+  const monthlyLimits = await getCategoryMonthlyLimits();
   const specificLimit = monthlyLimits.find(
     (l) => l.categoryId === categoryId && l.month === month
   );
   if (specificLimit) return specificLimit.limit;
 
-  const categories = getCategories();
+  const categories = await getCategories();
   const category = categories.find((c) => c.id === categoryId);
   return category?.defaultLimit || 0;
 };
 
-// Credit Cards
-export const getCreditCards = (): CreditCard[] => {
-  const data = localStorage.getItem(STORAGE_KEYS.CREDIT_CARDS);
-  return data ? JSON.parse(data) : [];
+export const saveCategoryLimit = async (limit: CategoryMonthlyLimit): Promise<void> => {
+  const existing = await db.categoryLimits
+    .where('categoryId')
+    .equals(limit.categoryId)
+    .filter(l => l.month === limit.month)
+    .first();
+  
+  if (existing) {
+    const key = await db.categoryLimits.add(limit);
+    await db.categoryLimits.update(key, limit);
+  } else {
+    await db.categoryLimits.add(limit);
+  }
 };
 
-export const saveCreditCards = (cards: CreditCard[]): void => {
-  localStorage.setItem(STORAGE_KEYS.CREDIT_CARDS, JSON.stringify(cards));
+// Credit Cards
+export const getCreditCards = async (): Promise<CreditCard[]> => {
+  return await db.creditCards.toArray();
+};
+
+export const saveCreditCards = async (cards: CreditCard[]): Promise<void> => {
+  await db.creditCards.clear();
+  await db.creditCards.bulkAdd(cards);
+};
+
+export const addCreditCard = async (card: CreditCard): Promise<void> => {
+  await db.creditCards.add(card);
+};
+
+export const updateCreditCard = async (card: CreditCard): Promise<void> => {
+  await db.creditCards.update(card.id, card);
+};
+
+export const deleteCreditCard = async (id: string): Promise<void> => {
+  await db.creditCards.delete(id);
 };
 
 // Transactions
-export const getTransactions = (): Transaction[] => {
-  const data = localStorage.getItem(STORAGE_KEYS.TRANSACTIONS);
-  return data ? JSON.parse(data) : [];
+export const getTransactions = async (): Promise<Transaction[]> => {
+  return await db.transactions.toArray();
 };
 
-export const saveTransactions = (transactions: Transaction[]): void => {
-  localStorage.setItem(STORAGE_KEYS.TRANSACTIONS, JSON.stringify(transactions));
+export const saveTransactions = async (transactions: Transaction[]): Promise<void> => {
+  await db.transactions.clear();
+  await db.transactions.bulkAdd(transactions);
+};
+
+export const addTransaction = async (transaction: Transaction): Promise<void> => {
+  await db.transactions.add(transaction);
+};
+
+export const updateTransaction = async (transaction: Transaction): Promise<void> => {
+  await db.transactions.update(transaction.id, transaction);
+};
+
+export const deleteTransaction = async (id: string): Promise<void> => {
+  await db.transactions.delete(id);
+};
+
+export const getTransactionsByMonth = async (month: string): Promise<Transaction[]> => {
+  return await db.transactions
+    .where('effectiveMonth')
+    .equals(month)
+    .toArray();
+};
+
+export const getTransactionsByCategory = async (categoryId: string): Promise<Transaction[]> => {
+  return await db.transactions
+    .where('categoryId')
+    .equals(categoryId)
+    .toArray();
+};
+
+export const getTransactionsByCreditCard = async (creditCardId: string): Promise<Transaction[]> => {
+  return await db.transactions
+    .where('creditCardId')
+    .equals(creditCardId)
+    .toArray();
 };
 
 // Calculate effective month for credit card transactions
@@ -123,11 +181,4 @@ export const generateInstallments = (
   }
 
   return transactions;
-};
-
-// Initialize with default categories if empty
-export const initializeStorage = (): void => {
-  if (!localStorage.getItem(STORAGE_KEYS.CATEGORIES)) {
-    saveCategories(getDefaultCategories());
-  }
 };

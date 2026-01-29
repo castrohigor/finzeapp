@@ -16,46 +16,64 @@ import {
   saveCreditCards,
   getTransactions,
   saveTransactions,
-  initializeStorage,
 } from '@/lib/storage';
+import { db, initializeDatabase } from '@/lib/db';
 
 export const useFinanceData = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [categoryLimits, setCategoryLimits] = useState<CategoryMonthlyLimit[]>([]);
   const [creditCards, setCreditCards] = useState<CreditCard[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    initializeStorage();
-    setCategories(getCategories());
-    setCategoryLimits(getCategoryMonthlyLimits());
-    setCreditCards(getCreditCards());
-    setTransactions(getTransactions());
+    const loadData = async () => {
+      try {
+        setIsLoading(true);
+        await initializeDatabase();
+        const [categoriesData, limitsData, cardsData, transactionsData] = await Promise.all([
+          getCategories(),
+          getCategoryMonthlyLimits(),
+          getCreditCards(),
+          getTransactions(),
+        ]);
+        setCategories(categoriesData);
+        setCategoryLimits(limitsData);
+        setCreditCards(cardsData);
+        setTransactions(transactionsData);
+      } catch (error) {
+        console.error('Error loading data from database:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadData();
   }, []);
 
   // Categories
-  const addCategory = useCallback((category: Omit<Category, 'id'>) => {
+  const addCategory = useCallback(async (category: Omit<Category, 'id'>) => {
     const newCategory = { ...category, id: crypto.randomUUID() };
     const updated = [...categories, newCategory];
     setCategories(updated);
-    saveCategories(updated);
+    await saveCategories(updated);
     return newCategory;
   }, [categories]);
 
-  const updateCategory = useCallback((id: string, updates: Partial<Category>) => {
+  const updateCategory = useCallback(async (id: string, updates: Partial<Category>) => {
     const updated = categories.map((c) => (c.id === id ? { ...c, ...updates } : c));
     setCategories(updated);
-    saveCategories(updated);
+    await saveCategories(updated);
   }, [categories]);
 
-  const deleteCategory = useCallback((id: string) => {
+  const deleteCategory = useCallback(async (id: string) => {
     const updated = categories.filter((c) => c.id !== id);
     setCategories(updated);
-    saveCategories(updated);
+    await saveCategories(updated);
   }, [categories]);
 
   // Category Monthly Limits
-  const setCategoryMonthlyLimit = useCallback((categoryId: string, month: string, limit: number) => {
+  const setCategoryMonthlyLimit = useCallback(async (categoryId: string, month: string, limit: number) => {
     const existing = categoryLimits.findIndex(
       (l) => l.categoryId === categoryId && l.month === month
     );
@@ -67,45 +85,45 @@ export const useFinanceData = () => {
       updated = [...categoryLimits, { categoryId, month, limit }];
     }
     setCategoryLimits(updated);
-    saveCategoryMonthlyLimits(updated);
+    await saveCategoryMonthlyLimits(updated);
   }, [categoryLimits]);
 
   // Credit Cards
-  const addCreditCard = useCallback((card: Omit<CreditCard, 'id'>) => {
+  const addCreditCard = useCallback(async (card: Omit<CreditCard, 'id'>) => {
     const newCard = { ...card, id: crypto.randomUUID() };
     const updated = [...creditCards, newCard];
     setCreditCards(updated);
-    saveCreditCards(updated);
+    await saveCreditCards(updated);
     return newCard;
   }, [creditCards]);
 
-  const updateCreditCard = useCallback((id: string, updates: Partial<CreditCard>) => {
+  const updateCreditCard = useCallback(async (id: string, updates: Partial<CreditCard>) => {
     const updated = creditCards.map((c) => (c.id === id ? { ...c, ...updates } : c));
     setCreditCards(updated);
-    saveCreditCards(updated);
+    await saveCreditCards(updated);
   }, [creditCards]);
 
-  const deleteCreditCard = useCallback((id: string) => {
+  const deleteCreditCard = useCallback(async (id: string) => {
     const updated = creditCards.filter((c) => c.id !== id);
     setCreditCards(updated);
-    saveCreditCards(updated);
+    await saveCreditCards(updated);
   }, [creditCards]);
 
   // Transactions
-  const addTransaction = useCallback((transaction: Transaction | Transaction[]) => {
+  const addTransaction = useCallback(async (transaction: Transaction | Transaction[]) => {
     const newTransactions = Array.isArray(transaction) ? transaction : [transaction];
     const updated = [...transactions, ...newTransactions];
     setTransactions(updated);
-    saveTransactions(updated);
+    await saveTransactions(updated);
   }, [transactions]);
 
-  const updateTransaction = useCallback((id: string, updates: Partial<Transaction>) => {
+  const updateTransaction = useCallback(async (id: string, updates: Partial<Transaction>) => {
     const updated = transactions.map((t) => (t.id === id ? { ...t, ...updates } : t));
     setTransactions(updated);
-    saveTransactions(updated);
+    await saveTransactions(updated);
   }, [transactions]);
 
-  const deleteTransaction = useCallback((id: string) => {
+  const deleteTransaction = useCallback(async (id: string) => {
     const transaction = transactions.find((t) => t.id === id);
     let updated: Transaction[];
     
@@ -119,7 +137,7 @@ export const useFinanceData = () => {
     }
     
     setTransactions(updated);
-    saveTransactions(updated);
+    await saveTransactions(updated);
   }, [transactions]);
 
   // Calculate monthly balance
@@ -200,9 +218,20 @@ export const useFinanceData = () => {
   const isCategoryOverLimit = useCallback((categoryId: string, month: string): boolean => {
     const balance = getMonthlyBalance(month);
     const spent = balance.categoryExpenses[categoryId] || 0;
-    const limit = getCategoryLimit(categoryId, month);
+    const limit = getCategoryLimitSync(categoryId, month);
     return spent > limit;
   }, [getMonthlyBalance]);
+
+  // Get category limit synchronously (from cached data)
+  const getCategoryLimitSync = useCallback((categoryId: string, month: string): number => {
+    const specificLimit = categoryLimits.find(
+      (l) => l.categoryId === categoryId && l.month === month
+    );
+    if (specificLimit) return specificLimit.limit;
+
+    const category = categories.find((c) => c.id === categoryId);
+    return category?.defaultLimit || 0;
+  }, [categoryLimits, categories]);
 
   // Get transactions for a month
   const getMonthTransactions = useCallback((month: string): Transaction[] => {
@@ -216,6 +245,7 @@ export const useFinanceData = () => {
     categoryLimits,
     creditCards,
     transactions,
+    isLoading,
     addCategory,
     updateCategory,
     deleteCategory,
@@ -230,6 +260,6 @@ export const useFinanceData = () => {
     getCreditCardBalance,
     isCategoryOverLimit,
     getMonthTransactions,
-    getCategoryLimit,
+    getCategoryLimitSync,
   };
 };

@@ -7,7 +7,6 @@ import { CategoryProgress } from '@/components/CategoryProgress';
 import { ExpenseCharts } from '@/components/ExpenseCharts';
 import { TransactionItem } from '@/components/TransactionItem';
 import { TransactionForm } from '@/components/TransactionForm';
-import { getCategoryLimit } from '@/lib/storage';
 
 const getCurrentMonth = (): string => {
   const now = new Date();
@@ -25,6 +24,7 @@ export const Dashboard = () => {
     getMonthTransactions,
     addTransaction,
     deleteTransaction,
+    getCategoryLimitSync,
   } = useFinanceData();
 
   const balance = useMemo(
@@ -57,7 +57,7 @@ export const Dashboard = () => {
                 key={category.id}
                 category={category}
                 spent={balance.categoryExpenses[category.id] || 0}
-                limit={getCategoryLimit(category.id, currentMonth)}
+                limit={getCategoryLimitSync(category.id, currentMonth)}
               />
             ))}
           </div>
