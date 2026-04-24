@@ -6,24 +6,27 @@ Sua aplicação PWA **Finança** agora usa **IndexedDB com Dexie.js** para armaz
 
 ## 📊 O que mudou
 
-| Aspecto | Antes | Depois |
-|---------|-------|--------|
-| **Storage** | localStorage (5-10MB) | IndexedDB (50MB+) |
-| **Interface** | Síncrona | Async/await |
-| **Queries** | JSON.parse() | Índices otimizados |
+| Aspecto         | Antes                  | Depois                 |
+| --------------- | ---------------------- | ---------------------- |
+| **Storage**     | localStorage (5-10MB)  | IndexedDB (50MB+)      |
+| **Interface**   | Síncrona               | Async/await            |
+| **Queries**     | JSON.parse()           | Índices otimizados     |
 | **Performance** | Lenta com muitos dados | ⚡ 10-100x mais rápido |
-| **Offline** | Funciona | Funciona melhor |
+| **Offline**     | Funciona               | Funciona melhor        |
 
 ## ✅ Arquivos Modificados
 
 ### Core do Banco
+
 - **`src/lib/db.ts`** ⭐ NOVO - Schema Dexie com todas as tabelas
 - **`src/lib/storage.ts`** - Atualizado para usar Dexie (async)
 
 ### Hook React
+
 - **`src/hooks/useFinanceData.ts`** - Atualizado para async/await
 
 ### Componentes
+
 - **`src/pages/Dashboard.tsx`** - Atualizado para usar `getCategoryLimitSync`
 
 ## 📝 Documentação Incluída
@@ -38,6 +41,7 @@ Sua aplicação PWA **Finança** agora usa **IndexedDB com Dexie.js** para armaz
 ## 🚀 Próximos Passos
 
 ### Imediato (Recomendado)
+
 ```bash
 # Testar em dev
 npm run dev
@@ -50,11 +54,13 @@ npm run dev
 ```
 
 ### Curto Prazo (Opcional)
+
 - Implementar sincronização com servidor
 - Adicionar backup automático
 - Criar página de admin para gerenciar banco
 
 ### Longo Prazo (Futuro)
+
 - Integração com API Backend
 - Sincronização em tempo real
 - Análise de dados avançada
@@ -63,7 +69,7 @@ npm run dev
 
 ```json
 {
-  "dexie": "^4.2.1"  // Já instalado ✅
+  "dexie": "^4.2.1" // Já instalado ✅
 }
 ```
 
@@ -72,34 +78,39 @@ Nenhuma dependência extra necessária!
 ## 🎓 Conceitos Implementados
 
 ### 1. **Schema com Índices**
+
 ```typescript
-transactions: 'id, effectiveMonth, categoryId, creditCardId, date'
+transactions: "id, effectiveMonth, categoryId, creditCardId, date";
 ```
+
 - Busca rápida por mês: `O(1)` ao invés de `O(n)`
 - Busca rápida por categoria: `O(1)` ao invés de `O(n)`
 
 ### 2. **Async/Await**
+
 Todas as operações são não-bloqueantes:
+
 ```typescript
 const transactions = await getTransactions(); // Não bloqueia UI
 ```
 
 ### 3. **CRUD Operations**
+
 Operações individuais de Create, Read, Update, Delete:
+
 ```typescript
-await addCategory(cat);      // Create
+await addCategory(cat); // Create
 const cat = getCategorySync(); // Read
 await updateCategory(id, data); // Update
-await deleteCategory(id);    // Delete
+await deleteCategory(id); // Delete
 ```
 
 ### 4. **Consultas Avançadas**
+
 Queries SQL-like com Dexie:
+
 ```typescript
-await db.transactions
-  .where('effectiveMonth')
-  .equals('2025-01')
-  .toArray(); // Rápido!
+await db.transactions.where("effectiveMonth").equals("2025-01").toArray(); // Rápido!
 ```
 
 ## 💡 Benefícios Imediatos
@@ -122,12 +133,12 @@ await db.transactions
 
 Antes vs Depois com 10.000 transações:
 
-| Operação | localStorage | IndexedDB |
-|----------|-------------|----------|
-| Carregar app | ~500ms | ~50ms ⚡ |
-| Buscar transações do mês | ~200ms | ~2ms ⚡ |
-| Adicionar categoria | ~50ms | ~5ms ⚡ |
-| Filtrar por categoria | ~300ms | ~1ms ⚡ |
+| Operação                 | localStorage | IndexedDB |
+| ------------------------ | ------------ | --------- |
+| Carregar app             | ~500ms       | ~50ms ⚡  |
+| Buscar transações do mês | ~200ms       | ~2ms ⚡   |
+| Adicionar categoria      | ~50ms        | ~5ms ⚡   |
+| Filtrar por categoria    | ~300ms       | ~1ms ⚡   |
 
 ## 🛡️ Segurança
 
@@ -139,15 +150,17 @@ Antes vs Depois com 10.000 transações:
 ## 📞 Suporte
 
 ### Documentação
+
 - [Dexie.js Docs](https://dexie.org/)
 - [IndexedDB Spec](https://w3c.github.io/IndexedDB/)
 
 ### Debug
+
 ```javascript
 // No console do navegador:
-db.tables.map(t => t.name) // Listar tabelas
-db.transactions.count()     // Contar transações
-db.delete()                 // Resetar tudo
+db.tables.map((t) => t.name); // Listar tabelas
+db.transactions.count(); // Contar transações
+db.delete(); // Resetar tudo
 ```
 
 ## ✅ Checklist Final

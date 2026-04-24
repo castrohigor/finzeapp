@@ -3,9 +3,11 @@
 ## Começando
 
 ### Instalação
+
 ✅ Já feita! Dexie já estava no package.json.
 
 ### Inicialização Automática
+
 O banco é inicializado automaticamente quando o app carrega:
 
 ```typescript
@@ -21,14 +23,15 @@ const { categories, addCategory } = useFinanceData();
 ## Exemplos de Uso
 
 ### 1. Listar Categorias
+
 ```typescript
 import { useFinanceData } from '@/hooks/useFinanceData';
 
 function MeuComponente() {
   const { categories, isLoading } = useFinanceData();
-  
+
   if (isLoading) return <div>Carregando...</div>;
-  
+
   return (
     <div>
       {categories.map(cat => (
@@ -40,14 +43,15 @@ function MeuComponente() {
 ```
 
 ### 2. Adicionar Categoria
+
 ```typescript
 const { addCategory } = useFinanceData();
 
 const handleAdd = async () => {
   await addCategory({
-    name: 'Nova Categoria',
+    name: "Nova Categoria",
     defaultLimit: 500,
-    color: '#FF0000'
+    color: "#FF0000",
   });
   // ✅ Salva em IndexedDB automaticamente
   // ✅ Atualiza estado React
@@ -56,52 +60,56 @@ const handleAdd = async () => {
 ```
 
 ### 3. Atualizar Categoria
+
 ```typescript
 const { updateCategory } = useFinanceData();
 
-await updateCategory('category-id', {
+await updateCategory("category-id", {
   defaultLimit: 1000,
-  name: 'Categoria Atualizada'
+  name: "Categoria Atualizada",
 });
 ```
 
 ### 4. Deletar Categoria
+
 ```typescript
 const { deleteCategory } = useFinanceData();
 
-await deleteCategory('category-id');
+await deleteCategory("category-id");
 ```
 
 ### 5. Adicionar Transação
+
 ```typescript
 const { addTransaction } = useFinanceData();
 
 const newTransaction = {
-  description: 'Compra no supermercado',
-  amount: 150.50,
-  type: 'expense' as const,
-  date: '2025-01-28',
-  categoryId: '1',
-  creditCardId: 'card-1',
-  effectiveMonth: '2025-01'
+  description: "Compra no supermercado",
+  amount: 150.5,
+  type: "expense" as const,
+  date: "2025-01-28",
+  categoryId: "1",
+  creditCardId: "card-1",
+  effectiveMonth: "2025-01",
 };
 
 await addTransaction(newTransaction);
 ```
 
 ### 6. Transações em Parcelas
+
 ```typescript
-import { generateInstallments } from '@/lib/storage';
+import { generateInstallments } from "@/lib/storage";
 
 const { addTransaction } = useFinanceData();
 
 const baseTransaction = {
-  description: 'Notebook em 3x',
+  description: "Notebook em 3x",
   amount: 3000,
-  type: 'expense' as const,
-  date: '2025-01-28',
-  categoryId: '1',
-  creditCardId: 'card-1'
+  type: "expense" as const,
+  date: "2025-01-28",
+  categoryId: "1",
+  creditCardId: "card-1",
 };
 
 // Gera 3 transações automaticamente
@@ -110,37 +118,41 @@ await addTransaction(installments);
 ```
 
 ### 7. Obter Transações de um Mês
-```typescript
-import { getTransactionsByMonth } from '@/lib/storage';
 
-const monthTransactions = await getTransactionsByMonth('2025-01');
+```typescript
+import { getTransactionsByMonth } from "@/lib/storage";
+
+const monthTransactions = await getTransactionsByMonth("2025-01");
 // Rápido com índice! ⚡
 ```
 
 ### 8. Filtrar Transações por Categoria
-```typescript
-import { getTransactionsByCategory } from '@/lib/storage';
 
-const categoryTransactions = await getTransactionsByCategory('1');
+```typescript
+import { getTransactionsByCategory } from "@/lib/storage";
+
+const categoryTransactions = await getTransactionsByCategory("1");
 // Busca otimizada! 🚀
 ```
 
 ### 9. Definir Limite Mensal
+
 ```typescript
 const { setCategoryMonthlyLimit } = useFinanceData();
 
 await setCategoryMonthlyLimit(
-  'category-id', 
-  '2025-01', 
-  1500  // novo limite
+  "category-id",
+  "2025-01",
+  1500, // novo limite
 );
 ```
 
 ### 10. Obter Limite (síncrono)
+
 ```typescript
 const { getCategoryLimitSync } = useFinanceData();
 
-const limit = getCategoryLimitSync('category-id', '2025-01');
+const limit = getCategoryLimitSync("category-id", "2025-01");
 console.log(`Limite: R$ ${limit}`);
 ```
 
@@ -149,31 +161,28 @@ console.log(`Limite: R$ ${limit}`);
 Para consultas mais avançadas, acesse o banco diretamente:
 
 ```typescript
-import { db } from '@/lib/db';
+import { db } from "@/lib/db";
 
 // Contar registros
 const count = await db.transactions.count();
 
 // Buscar por ID
-const transaction = await db.transactions.get('transaction-id');
+const transaction = await db.transactions.get("transaction-id");
 
 // Filtrar complexo
-const expensive = await db.transactions
-  .where('amount')
-  .above(500)
-  .toArray();
+const expensive = await db.transactions.where("amount").above(500).toArray();
 
 // Range de datas
 const monthly = await db.transactions
-  .where('date')
-  .between('2025-01-01', '2025-01-31')
+  .where("date")
+  .between("2025-01-01", "2025-01-31")
   .toArray();
 
 // Múltiplos filtros
 const filtered = await db.transactions
-  .where('categoryId')
-  .equals('1')
-  .filter(t => t.type === 'expense' && t.amount > 100)
+  .where("categoryId")
+  .equals("1")
+  .filter((t) => t.type === "expense" && t.amount > 100)
   .toArray();
 ```
 
@@ -194,7 +203,7 @@ O app funciona 100% offline:
 Se quiser sincronizar com servidor:
 
 ```typescript
-import { 
+import {
   getCategories,
   getCreditCards,
   getTransactions,
@@ -202,8 +211,8 @@ import {
   saveCategories,
   saveCreditCards,
   saveTransactions,
-  saveCategoryMonthlyLimits
-} from '@/lib/storage';
+  saveCategoryMonthlyLimits,
+} from "@/lib/storage";
 
 // EXPORTAR
 async function syncToServer() {
@@ -211,27 +220,28 @@ async function syncToServer() {
     getCategories(),
     getCreditCards(),
     getTransactions(),
-    getCategoryMonthlyLimits()
+    getCategoryMonthlyLimits(),
   ]);
-  
+
   // Enviar para servidor
-  await fetch('/api/sync', {
-    method: 'POST',
-    body: JSON.stringify(data)
+  await fetch("/api/sync", {
+    method: "POST",
+    body: JSON.stringify(data),
   });
 }
 
 // IMPORTAR
 async function syncFromServer() {
-  const response = await fetch('/api/data');
-  const { categories, creditCards, transactions, limits } = await response.json();
-  
+  const response = await fetch("/api/data");
+  const { categories, creditCards, transactions, limits } =
+    await response.json();
+
   // Salvar localmente
   await Promise.all([
     saveCategories(categories),
     saveCreditCards(creditCards),
     saveTransactions(transactions),
-    saveCategoryMonthlyLimits(limits)
+    saveCategoryMonthlyLimits(limits),
   ]);
 }
 ```
@@ -245,16 +255,21 @@ async function backupData() {
     getCategories(),
     getCreditCards(),
     getTransactions(),
-    getCategoryMonthlyLimits()
+    getCategoryMonthlyLimits(),
   ]);
-  
-  const backup = { categories: cats, creditCards: cards, transactions: trans, limits };
+
+  const backup = {
+    categories: cats,
+    creditCards: cards,
+    transactions: trans,
+    limits,
+  };
   const json = JSON.stringify(backup);
-  
+
   // Salvar em arquivo
-  const blob = new Blob([json], { type: 'application/json' });
+  const blob = new Blob([json], { type: "application/json" });
   const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
+  const a = document.createElement("a");
   a.href = url;
   a.download = `backup-${new Date().toISOString()}.json`;
   a.click();
@@ -263,12 +278,12 @@ async function backupData() {
 // RESTAURAR
 async function restoreData(jsonFile: string) {
   const data = JSON.parse(jsonFile);
-  
+
   await Promise.all([
     saveCategories(data.categories),
     saveCreditCards(data.creditCards),
     saveTransactions(data.transactions),
-    saveCategoryMonthlyLimits(data.limits)
+    saveCategoryMonthlyLimits(data.limits),
   ]);
 }
 ```
@@ -276,6 +291,7 @@ async function restoreData(jsonFile: string) {
 ## DevTools: Inspecionar Dados
 
 No navegador:
+
 1. Abrir DevTools (F12)
 2. Ir para **Application**
 3. Expandir **IndexedDB**
@@ -286,38 +302,38 @@ No navegador:
 
 Com IndexedDB vs localStorage:
 
-| Operação | localStorage | IndexedDB |
-|----------|-------------|----------|
-| Ler 100 categorias | ~5ms | ~1ms |
-| Buscar transação | ~50ms | ~1ms |
-| Salvar 1000 transações | ~200ms | ~10ms |
-| Consulta range | ~500ms | ~5ms |
+| Operação               | localStorage | IndexedDB |
+| ---------------------- | ------------ | --------- |
+| Ler 100 categorias     | ~5ms         | ~1ms      |
+| Buscar transação       | ~50ms        | ~1ms      |
+| Salvar 1000 transações | ~200ms       | ~10ms     |
+| Consulta range         | ~500ms       | ~5ms      |
 
 **IndexedDB é 10-100x mais rápido!** ⚡
 
 ## Troubleshooting
 
 ### Dados não aparecem
+
 ```typescript
-import { initializeDatabase } from '@/lib/db';
+import { initializeDatabase } from "@/lib/db";
 await initializeDatabase(); // Reinicia com dados padrão
 ```
 
 ### IndexedDB cheio
+
 ```typescript
 // Limpar dados antigos
-import { db } from '@/lib/db';
+import { db } from "@/lib/db";
 
-const oldDate = '2024-12-01';
-await db.transactions
-  .where('date')
-  .below(oldDate)
-  .delete();
+const oldDate = "2024-12-01";
+await db.transactions.where("date").below(oldDate).delete();
 ```
 
 ### Ver tamanho do banco
+
 ```typescript
-if ('storage' in navigator) {
+if ("storage" in navigator) {
   const estimate = await navigator.storage.estimate();
   console.log(`Usado: ${estimate.usage / 1024 / 1024}MB`);
   console.log(`Total: ${estimate.quota / 1024 / 1024}MB`);

@@ -7,11 +7,13 @@ Sua aplicação PWA agora usa **Dexie.js** para armazenar dados em um banco de d
 ## ✅ O que foi feito:
 
 ### 1. **Criado novo arquivo de banco de dados** (`src/lib/db.ts`)
+
 - Schema do Dexie com todas as tabelas necessárias
 - Índices otimizados para consultas rápidas
 - Função de inicialização com dados padrão
 
 ### 2. **Atualizado `src/lib/storage.ts`**
+
 - Todas as funções agora são **async** e usam Dexie
 - Novas funções de CRUD individual:
   - `addCategory()`, `updateCategory()`, `deleteCategory()`
@@ -24,25 +26,27 @@ Sua aplicação PWA agora usa **Dexie.js** para armazenar dados em um banco de d
   - `saveCategoryLimit()`
 
 ### 3. **Atualizado hook `useFinanceData.ts`**
+
 - Callbacks agora são **async**
 - Carregamento de dados no mount via Promise.all() para melhor performance
 - Novo método síncrono `getCategoryLimitSync()` para componentes que precisam de dados em cache
 - Adicionado estado `isLoading` para controlar carregamento
 
 ### 4. **Atualizado `Dashboard.tsx`**
+
 - Removida importação de `getCategoryLimit` síncrono
 - Usando novo `getCategoryLimitSync` do hook
 
 ## 🎯 Benefícios
 
-| Recurso | localStorage | IndexedDB (Dexie) |
-|---------|-------------|------------------|
-| **Espaço** | ~5-10MB | 50MB+ |
-| **Velocidade** | Lenta com muitos dados | ⚡ Muito rápida |
-| **Índices** | Nenhum | Sim, otimizado |
-| **Queries** | Apenas JSON parse | SQL-like |
-| **PWA Offline** | Sim | Sim (melhor) |
-| **Sincronização** | Manual | Suporta sincronização |
+| Recurso           | localStorage           | IndexedDB (Dexie)     |
+| ----------------- | ---------------------- | --------------------- |
+| **Espaço**        | ~5-10MB                | 50MB+                 |
+| **Velocidade**    | Lenta com muitos dados | ⚡ Muito rápida       |
+| **Índices**       | Nenhum                 | Sim, otimizado        |
+| **Queries**       | Apenas JSON parse      | SQL-like              |
+| **PWA Offline**   | Sim                    | Sim (melhor)          |
+| **Sincronização** | Manual                 | Suporta sincronização |
 
 ## 🚀 Como usar
 
@@ -59,14 +63,18 @@ const categories = await getCategories(); // Async
 const { categories, addCategory, updateCategory } = useFinanceData();
 
 // Você pode usar o hook normalmente, ele cuida das operações async:
-await addCategory({ name: 'Nova', defaultLimit: 500, color: '#fff' });
+await addCategory({ name: "Nova", defaultLimit: 500, color: "#fff" });
 ```
 
 ### Usando as novas funções de CRUD:
 
 ```typescript
 // Importar do storage
-import { addTransaction, updateTransaction, deleteTransaction } from '@/lib/storage';
+import {
+  addTransaction,
+  updateTransaction,
+  deleteTransaction,
+} from "@/lib/storage";
 
 // Usar diretamente:
 await addTransaction(transaction);
@@ -77,16 +85,16 @@ await deleteTransaction(transactionId);
 ### Consultando com índices:
 
 ```typescript
-import { 
-  getTransactionsByMonth, 
+import {
+  getTransactionsByMonth,
   getTransactionsByCategory,
-  getTransactionsByCreditCard 
-} from '@/lib/storage';
+  getTransactionsByCreditCard,
+} from "@/lib/storage";
 
 // Rápido! Usa índices do banco
-const monthTransactions = await getTransactionsByMonth('2025-01');
-const categoryTransactions = await getTransactionsByCategory('1');
-const cardTransactions = await getTransactionsByCreditCard('card-123');
+const monthTransactions = await getTransactionsByMonth("2025-01");
+const categoryTransactions = await getTransactionsByCategory("1");
+const cardTransactions = await getTransactionsByCreditCard("card-123");
 ```
 
 ## 📋 Schema do Banco de Dados
@@ -103,6 +111,7 @@ const cardTransactions = await getTransactionsByCreditCard('card-123');
 ## 🔄 Dados Offline
 
 A aplicação funciona **100% offline**:
+
 - ✅ Todos os dados salvos em IndexedDB
 - ✅ Funciona sem conexão com internet
 - ✅ Dados sincronizam quando voltar online (se implementado)
@@ -125,7 +134,7 @@ async function exportData() {
     getCategories(),
     getCreditCards(),
     getTransactions(),
-    getCategoryMonthlyLimits()
+    getCategoryMonthlyLimits(),
   ]);
   return { categories: cats, creditCards: cards, transactions: trans, limits };
 }

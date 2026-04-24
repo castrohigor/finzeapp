@@ -1,5 +1,10 @@
-import { Category, CategoryMonthlyLimit, CreditCard, Transaction } from '@/types/finance';
-import { db, getDefaultCategories } from './db';
+import {
+  Category,
+  CategoryMonthlyLimit,
+  CreditCard,
+  Transaction,
+} from "@/types/finance";
+import { db, getDefaultCategories } from "./db";
 
 // Categories
 export const getCategories = async (): Promise<Category[]> => {
@@ -25,19 +30,26 @@ export const deleteCategory = async (id: string): Promise<void> => {
 };
 
 // Category Monthly Limits
-export const getCategoryMonthlyLimits = async (): Promise<CategoryMonthlyLimit[]> => {
+export const getCategoryMonthlyLimits = async (): Promise<
+  CategoryMonthlyLimit[]
+> => {
   return await db.categoryLimits.toArray();
 };
 
-export const saveCategoryMonthlyLimits = async (limits: CategoryMonthlyLimit[]): Promise<void> => {
+export const saveCategoryMonthlyLimits = async (
+  limits: CategoryMonthlyLimit[],
+): Promise<void> => {
   await db.categoryLimits.clear();
   await db.categoryLimits.bulkAdd(limits);
 };
 
-export const getCategoryLimit = async (categoryId: string, month: string): Promise<number> => {
+export const getCategoryLimit = async (
+  categoryId: string,
+  month: string,
+): Promise<number> => {
   const monthlyLimits = await getCategoryMonthlyLimits();
   const specificLimit = monthlyLimits.find(
-    (l) => l.categoryId === categoryId && l.month === month
+    (l) => l.categoryId === categoryId && l.month === month,
   );
   if (specificLimit) return specificLimit.limit;
 
@@ -46,13 +58,15 @@ export const getCategoryLimit = async (categoryId: string, month: string): Promi
   return category?.defaultLimit || 0;
 };
 
-export const saveCategoryLimit = async (limit: CategoryMonthlyLimit): Promise<void> => {
+export const saveCategoryLimit = async (
+  limit: CategoryMonthlyLimit,
+): Promise<void> => {
   const existing = await db.categoryLimits
-    .where('categoryId')
+    .where("categoryId")
     .equals(limit.categoryId)
-    .filter(l => l.month === limit.month)
+    .filter((l) => l.month === limit.month)
     .first();
-  
+
   if (existing) {
     const key = await db.categoryLimits.add(limit);
     await db.categoryLimits.update(key, limit);
@@ -88,16 +102,22 @@ export const getTransactions = async (): Promise<Transaction[]> => {
   return await db.transactions.toArray();
 };
 
-export const saveTransactions = async (transactions: Transaction[]): Promise<void> => {
+export const saveTransactions = async (
+  transactions: Transaction[],
+): Promise<void> => {
   await db.transactions.clear();
   await db.transactions.bulkAdd(transactions);
 };
 
-export const addTransaction = async (transaction: Transaction): Promise<void> => {
+export const addTransaction = async (
+  transaction: Transaction,
+): Promise<void> => {
   await db.transactions.add(transaction);
 };
 
-export const updateTransaction = async (transaction: Transaction): Promise<void> => {
+export const updateTransaction = async (
+  transaction: Transaction,
+): Promise<void> => {
   await db.transactions.update(transaction.id, transaction);
 };
 
@@ -105,23 +125,23 @@ export const deleteTransaction = async (id: string): Promise<void> => {
   await db.transactions.delete(id);
 };
 
-export const getTransactionsByMonth = async (month: string): Promise<Transaction[]> => {
-  return await db.transactions
-    .where('effectiveMonth')
-    .equals(month)
-    .toArray();
+export const getTransactionsByMonth = async (
+  month: string,
+): Promise<Transaction[]> => {
+  return await db.transactions.where("effectiveMonth").equals(month).toArray();
 };
 
-export const getTransactionsByCategory = async (categoryId: string): Promise<Transaction[]> => {
-  return await db.transactions
-    .where('categoryId')
-    .equals(categoryId)
-    .toArray();
+export const getTransactionsByCategory = async (
+  categoryId: string,
+): Promise<Transaction[]> => {
+  return await db.transactions.where("categoryId").equals(categoryId).toArray();
 };
 
-export const getTransactionsByCreditCard = async (creditCardId: string): Promise<Transaction[]> => {
+export const getTransactionsByCreditCard = async (
+  creditCardId: string,
+): Promise<Transaction[]> => {
   return await db.transactions
-    .where('creditCardId')
+    .where("creditCardId")
     .equals(creditCardId)
     .toArray();
 };
@@ -129,7 +149,7 @@ export const getTransactionsByCreditCard = async (creditCardId: string): Promise
 // Calculate effective month for credit card transactions
 export const calculateEffectiveMonth = (
   transactionDate: string,
-  creditCard: CreditCard
+  creditCard: CreditCard,
 ): string => {
   const date = new Date(transactionDate);
   const day = date.getDate();
@@ -138,19 +158,22 @@ export const calculateEffectiveMonth = (
 
   // If transaction is after closing day, it goes to next month's bill
   if (day > creditCard.closingDay) {
-    const nextMonth = new Date(year, month + 2, 1); // +2 because it's due next month
-    return `${nextMonth.getFullYear()}-${String(nextMonth.getMonth() + 1).padStart(2, '0')}`;
+    const nextMonth = new Date(year, month + 1, 1); // +1 because it's due next month
+    return `${nextMonth.getFullYear()}-${String(nextMonth.getMonth() + 1).padStart(2, "0")}`;
   } else {
-    const nextMonth = new Date(year, month + 1, 1);
-    return `${nextMonth.getFullYear()}-${String(nextMonth.getMonth() + 1).padStart(2, '0')}`;
+    const nextMonth = new Date(year, month, 1);
+    return `${nextMonth.getFullYear()}-${String(nextMonth.getMonth()).padStart(2, "0")}`;
   }
 };
 
 // Generate installment transactions
 export const generateInstallments = (
-  baseTransaction: Omit<Transaction, 'id' | 'installmentNumber' | 'effectiveMonth'>,
+  baseTransaction: Omit<
+    Transaction,
+    "id" | "installmentNumber" | "effectiveMonth"
+  >,
   totalInstallments: number,
-  creditCard?: CreditCard
+  creditCard?: CreditCard,
 ): Transaction[] => {
   const transactions: Transaction[] = [];
   const installmentGroupId = crypto.randomUUID();
@@ -159,13 +182,13 @@ export const generateInstallments = (
   for (let i = 0; i < totalInstallments; i++) {
     const installmentDate = new Date(baseTransaction.date);
     installmentDate.setMonth(installmentDate.getMonth() + i);
-    const dateStr = installmentDate.toISOString().split('T')[0];
+    const dateStr = installmentDate.toISOString().split("T")[0];
 
     let effectiveMonth: string;
     if (creditCard) {
       effectiveMonth = calculateEffectiveMonth(dateStr, creditCard);
     } else {
-      effectiveMonth = `${installmentDate.getFullYear()}-${String(installmentDate.getMonth() + 1).padStart(2, '0')}`;
+      effectiveMonth = `${installmentDate.getFullYear()}-${String(installmentDate.getMonth() + 1).padStart(2, "0")}`;
     }
 
     transactions.push({

@@ -1,16 +1,16 @@
-import { useState, useMemo } from 'react';
-import { Plus } from 'lucide-react';
-import { useFinanceData } from '@/hooks/useFinanceData';
-import { MonthSelector } from '@/components/MonthSelector';
-import { BalanceCard } from '@/components/BalanceCard';
-import { CategoryProgress } from '@/components/CategoryProgress';
-import { ExpenseCharts } from '@/components/ExpenseCharts';
-import { TransactionItem } from '@/components/TransactionItem';
-import { TransactionForm } from '@/components/TransactionForm';
+import { useState, useMemo } from "react";
+import { Plus } from "lucide-react";
+import { useFinanceData } from "@/hooks/useFinanceData";
+import { MonthSelector } from "@/components/MonthSelector";
+import { BalanceCard } from "@/components/BalanceCard";
+import { CategoryProgress } from "@/components/CategoryProgress";
+import { ExpenseCharts } from "@/components/ExpenseCharts";
+import { TransactionItem } from "@/components/TransactionItem";
+import { TransactionForm } from "@/components/TransactionForm";
 
 const getCurrentMonth = (): string => {
   const now = new Date();
-  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
 };
 
 export const Dashboard = () => {
@@ -29,12 +29,12 @@ export const Dashboard = () => {
 
   const balance = useMemo(
     () => getMonthlyBalance(currentMonth),
-    [currentMonth, getMonthlyBalance]
+    [currentMonth, getMonthlyBalance],
   );
 
   const transactions = useMemo(
     () => getMonthTransactions(currentMonth).slice(0, 5),
-    [currentMonth, getMonthTransactions]
+    [currentMonth, getMonthTransactions],
   );
 
   return (
@@ -87,7 +87,9 @@ export const Dashboard = () => {
               ))
             ) : (
               <div className="stat-card text-center py-8">
-                <p className="text-muted-foreground">Nenhum lançamento neste mês</p>
+                <p className="text-muted-foreground">
+                  Nenhum lançamento neste mês
+                </p>
               </div>
             )}
           </div>

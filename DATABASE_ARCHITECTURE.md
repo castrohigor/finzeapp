@@ -103,6 +103,7 @@
 ## Fluxo de Dados
 
 ### Leitura
+
 ```
 Component
    ↓
@@ -118,6 +119,7 @@ Callback na UI atualiza
 ```
 
 ### Escrita
+
 ```
 Component chama addTransaction()
    ↓
@@ -137,38 +139,39 @@ Component re-renderiza
 ## Comparação: Antes vs Depois
 
 ### ❌ ANTES: localStorage
+
 ```javascript
 // Síncrono - Bloqueia UI
 const getTransactions = () => {
-  const data = localStorage.getItem('finance_transactions');
+  const data = localStorage.getItem("finance_transactions");
   return JSON.parse(data); // Todo JSON é parseado
-}
+};
 
 // Sem índices - busca lenta
-getTransactions().filter(t => t.effectiveMonth === '2025-01')
+getTransactions().filter((t) => t.effectiveMonth === "2025-01");
 ```
 
 **Problemas:**
+
 - Limite de 5-10MB
 - Sem índices de busca
 - JSON.parse() é lento com muitos dados
 - Bloqueia thread principal
 
 ### ✅ DEPOIS: IndexedDB (Dexie)
+
 ```javascript
 // Async - Não bloqueia UI
 const getTransactionsByMonth = async (month) => {
-  return await db.transactions
-    .where('effectiveMonth')
-    .equals(month)
-    .toArray(); // Índice garante velocidade O(1)
-}
+  return await db.transactions.where("effectiveMonth").equals(month).toArray(); // Índice garante velocidade O(1)
+};
 
 // Usar em componente
-const transactions = await getTransactionsByMonth('2025-01');
+const transactions = await getTransactionsByMonth("2025-01");
 ```
 
 **Benefícios:**
+
 - 50MB+ disponível
 - Índices otimizados
 - Busca veloz O(1) ao invés de O(n)
@@ -179,17 +182,17 @@ const transactions = await getTransactionsByMonth('2025-01');
 
 ```typescript
 const schema = {
-  categories: 'id',  // id é chave primária
-  creditCards: 'id',
-  
+  categories: "id", // id é chave primária
+  creditCards: "id",
+
   // ++ gera ID automático
   // categoryId e month são índices secundários
-  categoryLimits: '++, categoryId, month',
-  
+  categoryLimits: "++, categoryId, month",
+
   // id é chave primária
   // effectiveMonth, categoryId, creditCardId, date são índices
-  transactions: 'id, effectiveMonth, categoryId, creditCardId, date'
-}
+  transactions: "id, effectiveMonth, categoryId, creditCardId, date",
+};
 ```
 
 ### Por que índices são importantes?
@@ -211,34 +214,38 @@ const spent = await db.transactions
 ## Casos de Uso
 
 ### 1. Dashboard - Obter saldo do mês
+
 ```typescript
 const balance = await db.transactions
-  .where('effectiveMonth')
-  .equals('2025-01')
+  .where("effectiveMonth")
+  .equals("2025-01")
   .toArray(); // Rápido com índice!
 ```
 
 ### 2. Transações - Filtrar por categoria
+
 ```typescript
 const expenses = await db.transactions
-  .where('categoryId')
+  .where("categoryId")
   .equals(categoryId)
   .toArray();
 ```
 
 ### 3. Cartões - Ver faturas
+
 ```typescript
 const billTransactions = await db.transactions
-  .where('creditCardId')
+  .where("creditCardId")
   .equals(cardId)
   .toArray();
 ```
 
 ### 4. Análise - Range de datas
+
 ```typescript
 const monthly = await db.transactions
-  .where('date')
-  .between('2025-01-01', '2025-01-31')
+  .where("date")
+  .between("2025-01-01", "2025-01-31")
   .toArray();
 ```
 
@@ -251,12 +258,12 @@ const monthly = await db.transactions
 
 ## Performance
 
-| Operação | Sem Índice | Com Índice |
-|----------|-----------|----------|
-| Buscar 1 item em 100k | ~50ms | ~1ms |
-| Contar items | ~100ms | ~2ms |
-| Somar valores | ~150ms | ~5ms |
-| Range query | ~200ms | ~10ms |
+| Operação              | Sem Índice | Com Índice |
+| --------------------- | ---------- | ---------- |
+| Buscar 1 item em 100k | ~50ms      | ~1ms       |
+| Contar items          | ~100ms     | ~2ms       |
+| Somar valores         | ~150ms     | ~5ms       |
+| Range query           | ~200ms     | ~10ms      |
 
 Com Dexie: **50-100x mais rápido** ⚡
 
